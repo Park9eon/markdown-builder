@@ -10,11 +10,21 @@ import org.junit.Test
 import java.io.File
 
 
+typealias YamlData = Map<String, List<String>?>
+
+fun YamlData.getOne(key: String): String? {
+    return this[key]?.first()
+}
+
+fun YamlData.getAll(key: String): List<String?>? {
+    return this[key]
+}
 /**
  * Initial version by: park9eon
  * Initial version created on: 01/01/2018
  */
 class MarkdownBuildTest {
+
 
     @Test
     fun `build test`() {
@@ -47,9 +57,16 @@ class MarkdownBuildTest {
         document.accept(yamlVisitor)
 
         println(renderer.render(document))
-        yamlVisitor.data.forEach { key, value ->
-            println("$key - ${value} : ${value.size}")
-        }
+
+        val data: YamlData = yamlVisitor.data
+
+        val title: String? = data.getOne("title")
+        val date: String? = data.getOne("date")
+        val tags: List<String?>? = data.getAll("tags")
+
+        println(title)
+        println(date)
+        println(tags)
         // <p>This is <em>Sparta</em></p>
     }
 
@@ -95,7 +112,4 @@ class MarkdownBuildTest {
         }
     }
 
-    private fun String.toString(): String {
-        return "`${this}`"
-    }
 }
