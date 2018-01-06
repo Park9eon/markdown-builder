@@ -1,18 +1,26 @@
 package com.park9eon.blog
 
+import com.google.api.client.auth.oauth2.AuthorizationCodeFlow
+import com.google.api.client.auth.oauth2.BearerToken
+import com.google.api.client.auth.oauth2.ClientParametersAuthentication
+import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp
+import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver
+import com.google.api.client.googleapis.auth.oauth2.GoogleOAuthConstants
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
+import com.google.api.client.http.GenericUrl
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.JsonObjectParser
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.blogger.Blogger
 import com.google.api.services.blogger.BloggerRequestInitializer
-import com.google.api.services.blogger.model.Blog
 import com.google.api.services.blogger.model.Post
-import org.commonmark.ext.autolink.AutolinkExtension
-import org.commonmark.ext.front.matter.YamlFrontMatterExtension
-import org.commonmark.ext.front.matter.YamlFrontMatterVisitor
-import org.commonmark.node.Node
-import org.commonmark.parser.Parser
-import org.commonmark.renderer.html.HtmlRenderer
+import com.park9eon.blog.model.Markdown
+import com.park9eon.blog.model.YamlData
+import com.park9eon.blog.model.getOne
 import org.junit.Test
+import java.io.File
+import java.util.*
 
 
 /**
@@ -22,27 +30,7 @@ import org.junit.Test
 class BlogWriteTest {
 
     fun getApiKey(): String? {
-        val yamlVisitor = YamlFrontMatterVisitor()
-
-        val extensions = listOf(
-                AutolinkExtension.create(),
-                YamlFrontMatterExtension.create()
-        )
-        val parser: Parser = Parser.builder()
-                .extensions(extensions)
-                .build()
-        val document: Node = parser.parse(javaClass.classLoader.getResource("config.md")
-                .readText())
-        val renderer: HtmlRenderer = HtmlRenderer.builder()
-                .extensions(extensions)
-                .build()
-
-        document.accept(yamlVisitor)
-
-        println(renderer.render(document))
-
-        val data: YamlData = yamlVisitor.data
-
+        val data: YamlData = Markdown.load("config.md").yamlData
         return data.getOne("api_key")
     }
 
@@ -71,18 +59,56 @@ class BlogWriteTest {
 
     @Test
     fun `write blog post`() {
-        val blogger = getBlogger()
+
+        val config = Markdown.load("config.md").yamlData
+        val CLIENT_ID = config.getOne("client_id")
+        val CLIENT_SECRET = config.getOne("client_secret")
+        val DATA_STORE_DIR = File(System.getProperty("user.home"), ".store/blog")
+        val DATA_STORE_FACTORY = FileDataStoreFactory(DATA_STORE_DIR)
+        val HTTP_TRANSPORT = NetHttpTransport()
+        val JSON_FACTORY = JacksonFactory()
+        // set up authorization code flow
+        val flow = AuthorizationCodeFlow.Builder(BearerToken.authorizationHeaderAccessMethod(),
+                HTTP_TRANSPORT,
+                JSON_FACTORY,
+                GenericUrl(GoogleOAuthConstants.TOKEN_SERVER_URL),
+                ClientParametersAuthentication(CLIENT_ID, CLIENT_SECRET),
+                CLIENT_ID,
+                GoogleOAuthConstants.AUTHORIZATION_SERVER_URL)
+                .setScopes(Arrays.asList("https://www.googleapis.com/auth/blogger"))
+                .setDataStoreFactory(DATA_STORE_FACTORY).build()
+        // authorize
+        val receiver = LocalServerReceiver.Builder()
+                .setHost("localhost")
+                .setPort(8080)
+                .build()
+        val credential = AuthorizationCodeInstalledApp(flow, receiver)
+                .authorize("user")
+        val requestFactory = HTTP_TRANSPORT.createRequestFactory { request ->
+            credential.initialize(request)
+            request.parser = JsonObjectParser(JSON_FACTORY)
+        }
+
+        val blogger = Blogger.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory()) {
+            println(it)
+        }
+                .setApplicationName("Test")
+                .setHttpRequestInitializer(requestFactory.initializer)
+                .build()
         val blog = blogger.blogs()
                 .getByUrl("https://dev9eon.blogspot.kr/")
                 .execute()
 
         val content = Post()
         content.blog = Post.Blog().apply { id = blog.id }
-        content.title = "123"
+        content.title = "Hello, World!"
         content.content = "Hello, World!"
 
         val posts = blogger.posts()
                 .insert(blog.id, content)
                 .execute()
+        println(posts.title)
     }
 }

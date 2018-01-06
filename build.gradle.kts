@@ -33,12 +33,20 @@ dependencies {
     compile("com.atlassian.commonmark", "commonmark", "0.10.0")
     compile("com.atlassian.commonmark", "commonmark-ext-autolink", "0.10.0")
     compile("com.atlassian.commonmark", "commonmark-ext-yaml-front-matter", "0.10.0")
+    compile("com.google.apis", "google-api-services-blogger", "v3-rev55-1.23.0")
+    compile("com.google.oauth-client", "google-oauth-client", "1.23.0")
+    compile("com.google.oauth-client", "google-oauth-client-servlet", "1.23.0")
+    compile("com.google.oauth-client", "google-oauth-client-java6", "1.23.0")
+    compile("com.google.oauth-client", "google-oauth-client-jetty", "1.23.0")
+    compile("com.sparkjava", "spark-core", "2.7.1")
+    compile("com.sparkjava", "spark-kotlin", "1.0.0-alpha")
     testCompile("junit", "junit", "4.12")
 }
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
+
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }

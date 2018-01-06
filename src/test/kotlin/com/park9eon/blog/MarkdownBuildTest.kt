@@ -1,64 +1,26 @@
 package com.park9eon.blog
 
-import org.commonmark.ext.autolink.AutolinkExtension
-import org.commonmark.ext.front.matter.YamlFrontMatterExtension
-import org.commonmark.ext.front.matter.YamlFrontMatterVisitor
-import org.commonmark.node.Node
-import org.commonmark.parser.Parser
-import org.commonmark.renderer.html.HtmlRenderer
+import com.park9eon.blog.model.Markdown
+import com.park9eon.blog.model.YamlData
+import com.park9eon.blog.model.getAll
+import com.park9eon.blog.model.getOne
 import org.junit.Test
-import java.io.File
 
-
-typealias YamlData = Map<String, List<String>?>
-
-fun YamlData.getOne(key: String): String? {
-    return this[key]?.first()
-}
-
-fun YamlData.getAll(key: String): List<String?>? {
-    return this[key]
-}
 /**
  * Initial version by: park9eon
  * Initial version created on: 01/01/2018
  */
 class MarkdownBuildTest {
 
-
     @Test
     fun `build test`() {
-        val parser: Parser = Parser.builder()
-                .build()
-        val document: Node = parser.parse(javaClass.classLoader.getResource("posts/2018-01-01-test.md").readText())
-        val renderer: HtmlRenderer = HtmlRenderer.builder()
-                .build()
-        println(renderer.render(document))
-        // <p>This is <em>Sparta</em></p>
+        println(Markdown.load("posts/2018-01-01-test.md").html)
     }
 
     @Test
     fun `build test with extensions`() {
-        val yamlVisitor = YamlFrontMatterVisitor()
 
-        val extensions = listOf(
-                AutolinkExtension.create(),
-                YamlFrontMatterExtension.create()
-        )
-        val parser: Parser = Parser.builder()
-                .extensions(extensions)
-                .build()
-        val document: Node = parser.parse(javaClass.classLoader.getResource("posts/2018-01-01-test.md")
-                .readText())
-        val renderer: HtmlRenderer = HtmlRenderer.builder()
-                .extensions(extensions)
-                .build()
-
-        document.accept(yamlVisitor)
-
-        println(renderer.render(document))
-
-        val data: YamlData = yamlVisitor.data
+        val data: YamlData = Markdown.load("posts/2018-01-01-test.md").yamlData
 
         val title: String? = data.getOne("title")
         val date: String? = data.getOne("date")
@@ -72,44 +34,6 @@ class MarkdownBuildTest {
 
     @Test
     fun `get single markdown from resource`() {
-        println(javaClass.classLoader.getResource("posts/2018-01-01-test.md").readText()) // 없을 경우 에러
-        /*
-        ---
-        title: test
-        date: 2018-01-01
-        tags: [test, java]
-        ---
-
-        Hello, World!
-        */
+        println(Markdown.load("posts/2018-01-01-test.md").html)
     }
-
-    @Test
-    fun `get single markdown file from resource`() {
-        val file = File(javaClass.classLoader.getResource("posts/2018-01-01-test.md").toURI())
-        println(file.nameWithoutExtension)
-        println(file.extension)
-        println(file.path)
-        println(file.readText()) // 없을 경우 에러!
-        /*
-        ---
-        title: test
-        date: 2018-01-01
-        tags: [test, java]
-        ---
-
-        Hello, World!
-        */
-    }
-
-    @Test
-    fun `get all markdown files from resource`() {
-        val posts = File(javaClass.classLoader.getResource("posts").toURI())
-        posts.listFiles().forEach { file ->
-            println(file.nameWithoutExtension)
-            println(file.extension)
-            println(file.readText()) // 없을 경우 에러!
-        }
-    }
-
 }

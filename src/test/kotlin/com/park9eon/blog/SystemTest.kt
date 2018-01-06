@@ -1,5 +1,6 @@
 package com.park9eon.blog
 
+import com.park9eon.blog.model.YamlData
 import org.commonmark.ext.autolink.AutolinkExtension
 import org.commonmark.ext.front.matter.YamlFrontMatterExtension
 import org.commonmark.ext.front.matter.YamlFrontMatterVisitor
@@ -13,6 +14,7 @@ import org.junit.Test
  * Initial version created on: 05/01/2018
  */
 class SystemTest {
+
     @Test
     fun `get config`() {
         val yamlVisitor = YamlFrontMatterVisitor()
