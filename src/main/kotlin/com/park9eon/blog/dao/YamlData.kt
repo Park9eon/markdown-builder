@@ -15,3 +15,15 @@ fun YamlData.getOne(key: String): String? {
 fun YamlData.getAll(key: String): List<String?>? {
     return this[key]
 }
+
+val YamlData.title
+    get() = this.getOne("title")
+
+val YamlData.date
+    get() = this.getOne("date")
+
+val YamlData.tags
+    get() = this.getAll("tags")
+
+val YamlData.status
+    get() = this.getOne("status")

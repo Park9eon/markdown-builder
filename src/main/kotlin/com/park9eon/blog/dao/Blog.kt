@@ -10,12 +10,16 @@ import com.google.api.client.http.GenericUrl
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.JsonObjectParser
 import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.util.DateTime
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.blogger.Blogger
 import com.google.api.services.blogger.BloggerRequestInitializer
 import com.google.api.services.blogger.BloggerScopes
+import com.google.api.services.blogger.model.Post
 import com.google.api.services.blogger.model.PostList
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 /**
@@ -26,6 +30,8 @@ class Blog private constructor(val blogger: Blogger, val blog: com.google.api.se
 
     companion object {
 
+        val DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd")
+        private val POST_FIELDS = "author/displayName,content,published,title,url,status,etag,labels"
         private val APPLICATION_NAME = "BLOG"
         private val BLOGGER_SCOPES = listOf(BloggerScopes.BLOGGER)
         private val DATA_STORE_DIR = File(System.getProperty("user.home"), ".store/blogger")
@@ -95,6 +101,28 @@ class Blog private constructor(val blogger: Blogger, val blog: com.google.api.se
                     }
         }
     }
+
+    fun Post.insert(insert: (Blogger.Posts.Insert.() -> Unit)? = null): Post {
+        return blogger.posts()
+                .insert(blog.id, this)
+                .apply {
+                    this.isDraft = this@insert.status == "draft"
+                    insert?.invoke(this)
+                }
+                .setFields(POST_FIELDS)
+                .execute()
+    }
+
+    fun Post.update(update: (Blogger.Posts.Update.() -> Unit)? = null): Post {
+        return blogger.posts()
+                .update(blog.id, this.id, this)
+                .apply {
+                    update?.invoke(this)
+                }
+                .setFields(POST_FIELDS)
+                .execute()
+    }
+
 }
 
 fun blog(apiKey: String, url: String, blog: Blog.() -> Unit): Blog {
@@ -110,3 +138,20 @@ fun Blog.findAllPosts(): PostList = blogger.posts()
         .setMaxResults(blog.posts.totalItems.toLong() * 2)
         .setStatus(listOf("draft", "live"))
         .execute()
+
+fun Blog.post(post: Post.() -> Unit): Post = Post().apply {
+    this.blog = Post.Blog()
+            .apply {
+                this.id = this@post.blog.id
+            }
+    post(this)
+}
+
+fun Blog.post(markdown: Markdown): Post = post {
+    val meta = markdown.yamlData
+    this.title = meta.title
+    this.published = DateTime(Blog.DATE_FORMAT.parse(meta.date))
+    this.status = meta.status
+    this.content = markdown.html
+    this.labels = meta.tags
+}
