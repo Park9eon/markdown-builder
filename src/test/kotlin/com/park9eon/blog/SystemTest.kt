@@ -1,6 +1,6 @@
 package com.park9eon.blog
 
-import com.park9eon.blog.model.YamlData
+import com.park9eon.blog.dao.YamlData
 import org.commonmark.ext.autolink.AutolinkExtension
 import org.commonmark.ext.front.matter.YamlFrontMatterExtension
 import org.commonmark.ext.front.matter.YamlFrontMatterVisitor

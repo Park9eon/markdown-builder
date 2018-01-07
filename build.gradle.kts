@@ -38,8 +38,6 @@ dependencies {
     compile("com.google.oauth-client", "google-oauth-client-servlet", "1.23.0")
     compile("com.google.oauth-client", "google-oauth-client-java6", "1.23.0")
     compile("com.google.oauth-client", "google-oauth-client-jetty", "1.23.0")
-    compile("com.sparkjava", "spark-core", "2.7.1")
-    compile("com.sparkjava", "spark-kotlin", "1.0.0-alpha")
     testCompile("junit", "junit", "4.12")
 }
 
