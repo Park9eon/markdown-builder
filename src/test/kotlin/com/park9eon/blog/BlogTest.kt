@@ -17,7 +17,7 @@ class BlogTest {
     private val clientSecret
         get() = getConfig().getOne("client_secret")!!
 
-    private fun getConfig(): YamlData = Markdown.load("config.md").yamlData
+    private fun getConfig(): YamlData = Markdown.loadFromResource("config.md").yamlData
 
     @Test
     fun `get blog posts`() {
@@ -56,11 +56,13 @@ class BlogTest {
     @Test
     fun `write blog draft post by markdown`() {
         authenticatedBlog(clientId, clientSecret, blogUrl) {
-            val markdown = Markdown.load("posts/2018-01-01-test.md")
+            val markdown = Markdown.loadFromResource("posts/2018-01-01-test.md")
             val post = post(markdown)
                     .insert()
             println(post.title)
+            post.images
         }
+
     }
 
 }

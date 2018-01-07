@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.cli.jvm.main
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "blog-writer"
@@ -18,6 +19,7 @@ buildscript {
 }
 
 apply {
+    plugin("application")
     plugin("java")
     plugin("kotlin")
 }
@@ -49,3 +51,15 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+configure<ApplicationPluginConvention> {
+    mainClassName = "com.park9eon.blog.ApplicationKt"
+}
+
+tasks.withType<JavaExec> {
+    doFirst {
+        args = listOf(project.findProperty("filename") as String,
+                project.findProperty("clientId") as String,
+                project.findProperty("clientSecret") as String,
+                project.findProperty("blogUrl") as String)
+    }
+}

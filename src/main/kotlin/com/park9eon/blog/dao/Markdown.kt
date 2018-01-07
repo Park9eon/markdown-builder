@@ -18,8 +18,7 @@ class Markdown private constructor(val html: String,
                                    val path: String,
                                    val filename: String) {
     companion object {
-        fun load(path: String, context: Any = Markdown::class): Markdown {
-            val file = File(context.javaClass.classLoader.getResource(path).toURI())
+        fun loadFromFile(file: File): Markdown {
             val yamlVisitor = YamlFrontMatterVisitor()
             val extensions = listOf(
                     AutolinkExtension.create(),
@@ -44,6 +43,13 @@ class Markdown private constructor(val html: String,
 
             val html = renderer.render(document)
             return Markdown(html, yamlVisitor.data, file.path, file.name)
+        }
+        fun loadFromResource(path: String, context: Any = Markdown::class): Markdown {
+            val file = File(context.javaClass.classLoader.getResource(path).toURI())
+            return loadFromFile(file)
+        }
+        fun load(path: String): Markdown {
+            return loadFromFile(File(path))
         }
     }
 }
