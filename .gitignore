@@ -124,9 +124,10 @@ Temporary Items
 .apdisk
 
 /gradle.properties
-/src/test/resources/config.yaml
 /out/
 /build/
 /.idea/
 /.gradle/
-/src/test/resources/config.md
+/src/test/resources/client_secrets.json
+/src/main/resources/client_secrets.json
+*/client_secrets.json

@@ -36,6 +36,7 @@ dependencies {
     compile("com.atlassian.commonmark", "commonmark-ext-autolink", "0.10.0")
     compile("com.atlassian.commonmark", "commonmark-ext-yaml-front-matter", "0.10.0")
     compile("com.google.apis", "google-api-services-blogger", "v3-rev55-1.23.0")
+    compile("com.google.apis", "google-api-services-drive", "v3-rev94-1.23.0")
     compile("com.google.oauth-client", "google-oauth-client", "1.23.0")
     compile("com.google.oauth-client", "google-oauth-client-servlet", "1.23.0")
     compile("com.google.oauth-client", "google-oauth-client-java6", "1.23.0")
