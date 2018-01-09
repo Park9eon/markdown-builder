@@ -14,14 +14,13 @@ class GoogleDriveTest {
 
     @Test
     fun `get drive info`() {
-        val about = googleDriveService.about()
+        val about = googleDriveService.getAbout()
         println(about)
     }
 
     @Test
     fun `get file list`() {
-         val files = googleDriveService.list()
-
+         val files = googleDriveService.getFileList().files
         files.forEach {
             println("${it.name} / ${it.properties} / ${it.shared} / ${it.mimeType} / ${it.parents}")
         }
@@ -29,7 +28,9 @@ class GoogleDriveTest {
 
     @Test
     fun `white board`() {
-        val dir = googleDriveService.someDirectory("BLOGGER_API")
+        val dir = googleDriveService.getFileList {
+            this.q = "name = 'BLOGGER_API'"
+        }
         println(dir)
     }
 }

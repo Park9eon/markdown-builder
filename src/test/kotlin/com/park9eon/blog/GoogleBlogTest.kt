@@ -17,7 +17,7 @@ class GoogleBlogTest {
 
     @Test
     fun `Get blog by url`() {
-        val blog = googleBlogService.findByUrl("https://dev9eon.blogspot.kr")
+        val blog = googleBlogService.getByUrl("https://dev9eon.blogspot.kr")
         println("Blog name is ${blog.name}")
         println("Blog selfLinke is ${blog.selfLink}")
         println("Blog totalItems is ${blog.posts.totalItems}")
@@ -25,8 +25,10 @@ class GoogleBlogTest {
 
     @Test
     fun `Get all blog posts`() {
-        val blog = googleBlogService.findByUrl("https://dev9eon.blogspot.kr")
-        val posts = googleBlogService.findAllPosts(blog)
+        val blog = googleBlogService.getByUrl("https://dev9eon.blogspot.kr")
+        val posts = googleBlogService.getPostList(blog.id) {
+            maxResults = blog.posts.totalItems.toLong()
+        }.items
         posts.forEach { post ->
             println("${blog.name} - ${post.author.displayName} : ${post.title} / [${post.published.toStringRfc3339()}]")
         }
@@ -34,9 +36,11 @@ class GoogleBlogTest {
 
     @Test
     fun `Get one blog post by id`() {
-        val blog = googleBlogService.findByUrl("https://dev9eon.blogspot.kr")
-        val posts = googleBlogService.findAllPosts(blog)
-        val post = googleBlogService.findPostById(blog, posts.first().id)
+        val blog = googleBlogService.getByUrl("https://dev9eon.blogspot.kr")
+        val posts = googleBlogService.getPostList(blog.id) {
+            maxResults = blog.posts.totalItems.toLong()
+        }.items
+        val post = googleBlogService.getPost(blog.id, posts.first().id)
         println("${blog.name} - ${post.author.displayName} : ${post.title} / [${post.published.toStringRfc3339()}]")
     }
 
@@ -49,17 +53,17 @@ class GoogleBlogTest {
             labels = listOf("test", "java")
             published = DateTime(Date())
         }
-        val blog = googleBlogService.findByUrl("https://dev9eon.blogspot.kr")
+        val blog = googleBlogService.getByUrl("https://dev9eon.blogspot.kr")
         println("Blog name : ${blog.name}")
         println("Post title : ${post.title}")
-        post = googleBlogService.insert(blog, post)
+        post = googleBlogService.insert(blog.id, post)
         println("Post title : ${post.title} & id : ${post.id} / updated : ${post.updated.toStringRfc3339()}")
         println("Post title change")
         post.title = "New title"
         post.updated = DateTime(Date())
-        post = googleBlogService.update(blog, post)
+        post = googleBlogService.update(blog.id, post.id, post)
         println("Post title : ${post.title} & id : ${post.id} / updated : ${post.updated.toStringRfc3339()}")
-        googleBlogService.delete(blog, post.id)
+        googleBlogService.delete(blog.id, post.id)
         println("Post deleted!")
     }
 }

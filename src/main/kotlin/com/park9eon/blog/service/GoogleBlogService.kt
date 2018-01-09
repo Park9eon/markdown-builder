@@ -3,6 +3,7 @@ package com.park9eon.blog.service
 import com.google.api.services.blogger.Blogger
 import com.google.api.services.blogger.model.Blog
 import com.google.api.services.blogger.model.Post
+import com.google.api.services.blogger.model.PostList
 
 /**
  * Initial version by: park9eon
@@ -25,62 +26,70 @@ class GoogleBlogService : GoogleService() {
             .setApplicationName(APPLICATION_NAME)
             .build()
 
-    fun findByUrl(url: String, view: String = BLOG_VIEW_ADMIN,
-                  fields: String = BLOG_FIELDS): Blog {
-        return blogger.blogs()
-                .getByUrl(url)
-                .setView(view)
-                .setFields(fields)
-                .execute()
-    }
+    fun getByUrl(url: String,
+                 blogBlock: (Blogger.Blogs.GetByUrl.() -> Unit)? = null): Blog
+            = blogger.blogs()
+            .getByUrl(url)
+            .apply {
+                this.view = BLOG_VIEW_ADMIN
+                this.fields = BLOG_FIELDS
+                blogBlock?.invoke(this)
+            }
+            .execute()
 
-    fun findAllPosts(blog: Blog,
-                     view: String = BLOG_VIEW_ADMIN,
-                     fields: String = POST_LIST_FIELDS,
-                     status: List<String> = listOf(BLOG_STATUS_DRAFT, BLOG_STATUS_LIVE)): List<Post> {
-        return blogger.posts()
-                .list(blog.id)
-                .setView(view)
-                .setFields(fields)
-                .setMaxResults(blog.posts.totalItems.toLong())
-                .setStatus(status)
-                .execute()
-                .items
-    }
+    fun getPostList(blogId: String,
+                    postListBlock: (Blogger.Posts.List.() -> Unit)? = null): PostList
+            = blogger.posts()
+            .list(blogId)
+            .apply {
+                this.view = BLOG_VIEW_ADMIN
+                this.fields = POST_LIST_FIELDS
+                this.status = listOf(BLOG_STATUS_DRAFT, BLOG_STATUS_LIVE)
+                postListBlock?.invoke(this)
+            }
+            .execute()
 
-    fun findPostById(blog: Blog, postId: String,
-                     view: String = BLOG_VIEW_ADMIN,
-                     field: String = POST_FIELDS): Post {
-        return blogger.posts()
-                .get(blog.id, postId)
-                .setView(view)
-                .setFields(field)
-                .execute()
-    }
+    fun getPost(blogId: String,
+                postId: String,
+                postBlock: (Blogger.Posts.Get.() -> Unit)? = null): Post
+            = blogger.posts()
+            .get(blogId, postId)
+            .apply {
+                this.view = BLOG_VIEW_ADMIN
+                this.fields = POST_FIELDS
+                postBlock?.invoke(this)
+            }
+            .execute()
 
-    fun insert(blog: Blog,
+    fun insert(blogId: String,
                post: Post,
-               isDraft: Boolean = false): Post {
-        return blogger.posts()
-                .insert(blog.id, post)
-                .setIsDraft(isDraft)
-                .execute()
-    }
+               postBlock: (Blogger.Posts.Insert.() -> Unit)? = null): Post
+            = blogger.posts()
+            .insert(blogId, post)
+            .apply {
+                postBlock?.invoke(this)
+            }
+            .execute()
 
-    fun update(blog: Blog,
+    fun update(blogId: String,
+               postId: String,
                post: Post,
-               postId: String = post.id,
-               isDraft: Boolean = false): Post {
-        return blogger.posts()
-                .update(blog.id, postId, post)
-                .setPublish(!isDraft)
-                .execute()
-    }
+               postBlock: (Blogger.Posts.Update.() -> Unit)? = null): Post
+            = blogger.posts()
+            .update(blogId, postId, post)
+            .apply {
+                postBlock?.invoke(this)
+            }
+            .execute()
 
-    fun delete(blog: Blog,
-               postId: String) {
+    fun delete(blogId: String,
+               postId: String,
+               postBlock: (Blogger.Posts.Delete.() -> Unit)? = null) {
         blogger.posts()
-                .delete(blog.id, postId)
+                .delete(blogId, postId)
+                .apply {
+                    postBlock?.invoke(this)
+                }
                 .execute()
     }
 

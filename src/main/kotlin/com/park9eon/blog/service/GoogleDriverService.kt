@@ -3,6 +3,7 @@ package com.park9eon.blog.service
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.About
 import com.google.api.services.drive.model.File
+import com.google.api.services.drive.model.FileList
 
 
 /**
@@ -21,41 +22,31 @@ class GoogleDriverService : GoogleService() {
             .setApplicationName(APPLICATION_NAME)
             .build()
 
-    fun about(): About {
-        return driver.about()
-                .get()
-                .setFields(DRIVE_ABOUT_FIELDS)
-                .execute()
-    }
+    fun getAbout(aboutBlock: (Drive.About.Get.() -> Unit)? = null): About
+            = driver.about()
+            .get()
+            .apply {
+                this.fields = DRIVE_ABOUT_FIELDS
+                aboutBlock?.invoke(this)
+            }
+            .execute()
 
-    fun someDirectory(name: String): File {
-        return driver.files()
-                .list()
-                .setFields(DRIVE_FILE_LIST_FIELDS)
-                .setQ("name = '${name}' and mimeType = 'application/vnd.google-apps.folder'")
-                .execute()
-                .files
-                .first()
-    }
+    fun getFileList(fileListBlock: (Drive.Files.List.() -> Unit)? = null): FileList
+            = driver.files()
+            .list()
+            .apply {
+                this.fields = DRIVE_FILE_LIST_FIELDS
+                fileListBlock?.invoke(this)
+            }
+            .execute()
 
-    fun list(): List<File> {
-        return driver.files()
-                .list()
-                .setPageSize(100)
-                .setCorpus("user")
-                .setSpaces("drive")
-                .setQ("fullText contains 'blogger'")
-                .setSupportsTeamDrives(false)
-                .setFields(DRIVE_FILE_LIST_FIELDS)
-                .execute()
-                .files
-    }
-
-    fun findByFileId(fileId: String,
-                     fields: String = DRIVE_FILE_FIELDS): File {
-        return driver.files()
-                .get(fileId)
-                .setFields(fields)
-                .execute()
-    }
+    fun getFile(fileId: String,
+                fileBlock: (Drive.Files.Get.() -> Unit)? = null): File
+            = driver.files()
+            .get(fileId)
+            .apply {
+                this.fields = DRIVE_FILE_FIELDS
+                fileBlock?.invoke(this)
+            }
+            .execute()
 }

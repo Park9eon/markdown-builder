@@ -9,7 +9,6 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.blogger.BloggerScopes
-import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import java.io.File
 
