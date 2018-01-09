@@ -1,4 +1,4 @@
-package com.park9eon.blog.dao
+package com.park9eon.blog.model
 
 
 /**

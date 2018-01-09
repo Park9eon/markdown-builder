@@ -1,9 +1,9 @@
 package com.park9eon.blog
 
-import com.park9eon.blog.dao.Markdown
-import com.park9eon.blog.dao.YamlData
-import com.park9eon.blog.dao.getAll
-import com.park9eon.blog.dao.getOne
+import com.park9eon.blog.model.YamlData
+import com.park9eon.blog.model.getAll
+import com.park9eon.blog.model.getOne
+import com.park9eon.blog.service.MarkdownService
 import org.junit.Test
 
 /**
@@ -12,15 +12,17 @@ import org.junit.Test
  */
 class MarkdownBuildTest {
 
+    private val markdownService by lazy { MarkdownService() }
+
     @Test
     fun `build test`() {
-        println(Markdown.loadFromResource("posts/2018-01-01-test.md").html)
+        println(markdownService.loadFromResource("posts/2018-01-01-test.md"))
     }
 
     @Test
     fun `build test with extensions`() {
 
-        val data: YamlData = Markdown.loadFromResource("posts/2018-01-01-test.md").yamlData
+        val data: YamlData = markdownService.loadFromResource("posts/2018-01-01-test.md").yamlData
 
         val title: String? = data.getOne("title")
         val date: String? = data.getOne("date")
@@ -34,6 +36,6 @@ class MarkdownBuildTest {
 
     @Test
     fun `get single markdown from resource`() {
-        println(Markdown.loadFromResource("posts/2018-01-01-test.md").html)
+        println(markdownService.loadFromResource("posts/2018-01-01-test.md").html)
     }
 }
