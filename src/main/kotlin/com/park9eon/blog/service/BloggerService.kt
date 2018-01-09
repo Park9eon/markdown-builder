@@ -29,6 +29,9 @@ class BloggerService constructor(private val blogId: String,
                    googleDriveService: GoogleDriveService = GoogleDriveService()): BloggerService {
             val blog = googleBlogService.getByUrl(blogUrl)
             val postPathFile = java.io.File(postPath)
+            if (!postPathFile.exists()) {
+                postPathFile.mkdir()
+            }
             val photosDir = googleDriveService.getFileList {
                 this.q = "name = '$photosDirectionName'"
                 this.pageSize = 1
@@ -60,14 +63,14 @@ class BloggerService constructor(private val blogId: String,
         TODO("로컬 디비를 사용하던 아직 안됨!")
     }
 
-    fun deletePost() {
-        TODO("로컬 디비를 사용하던 아직 안됨!")
+    fun deletePost(postId: String) {
+        googleBlogService.delete(blogId, postId)
     }
 
     fun uploadImage(childPath: String): File {
         val image = java.io.File(postPath, childPath)
         val driveFile = getOneImageByName(image.name)
-        return if (driveFile == null) {
+        return driveFile ?: if (image.exists()) {
             val mimeType = Files.probeContentType(image.toPath())
             val fileMetadata = File()
 
@@ -83,7 +86,7 @@ class BloggerService constructor(private val blogId: String,
                                 .setAllowFileDiscovery(true))
             }
         } else {
-            driveFile
+            File().apply { webContentLink = childPath }
         }
     }
 
@@ -105,11 +108,13 @@ class BloggerService constructor(private val blogId: String,
 
     private inner class AutoImageUploadVisitor : AbstractVisitor() {
         override fun visit(image: Image?) {
-            image?.destination = image?.destination
-                    ?.let {
-                        uploadImage(it)
-                    }
-                    ?.webContentLink
+            if (image?.destination != null) {
+                image.destination = image.destination
+                        ?.let {
+                            uploadImage(it)
+                        }
+                        ?.webContentLink
+            }
             super.visit(image)
         }
     }

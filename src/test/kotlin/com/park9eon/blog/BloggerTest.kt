@@ -18,6 +18,9 @@ class BloggerTest {
 
     @Test
     fun `update test`() {
-        bloggerService.uploadPost("2018-01-01-test.md")
+        val post = bloggerService.uploadPost("2018-01-01-test.md")
+        println(post)
+        bloggerService.deletePost(post.id)
+        println("Deleted post!")
     }
 }
